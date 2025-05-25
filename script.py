@@ -31,7 +31,10 @@ def fetch_gfg_stats(username):
     return stats
 
 def generate_readme(stats):
-    content = f"""
+    new_content = f"""
+
+---
+
 # GeeksforGeeks Stats Card
 
 **Username:** [{stats['username']}](https://auth.geeksforgeeks.org/user/{stats['username']}/)  
@@ -40,10 +43,15 @@ def generate_readme(stats):
 
 _Last updated on {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}_
 """
-    with open("README.md", "w") as f:
-        f.write(content)
 
-if __name__ == "__main__":
-    username = "itsmanhy69"  # Replace with your GfG username if needed
-    stats = fetch_gfg_stats(username)
-    generate_readme(stats)
+    # Read existing README content
+    try:
+        with open("README.md", "r") as f:
+            existing = f.read()
+    except FileNotFoundError:
+        existing = ""
+
+    # Append new content at the end
+    with open("README.md", "w") as f:
+        f.write(existing)
+        f.write(new_content)
