@@ -8,16 +8,25 @@ def get_gfg_stats(username):
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
 
-    coding_score_div = soup.find('div', class_='rating-number')
-    coding_score = coding_score_div.text.strip() if coding_score_div else 'N/A'
-
+    coding_score = 'N/A'
     problems_solved = 'N/A'
-    stats_sections = soup.find_all('div', class_='stat-number')
-    for stat in stats_sections:
-        label = stat.find_previous_sibling('div')
-        if label and 'Solved' in label.text:
-            problems_solved = stat.text.strip()
+
+    # Find Coding Score
+    coding_div = soup.find('div', class_='rating-number')
+    if coding_div:
+        coding_score = coding_div.text.strip()
+
+    # Find Problems Solved by matching label and its value
+    stats_labels = soup.find_all('div', class_='stat-text')
+    stats_values = soup.find_all('div', class_='stat-number')
+
+    for label, value in zip(stats_labels, stats_values):
+        label_text = label.text.strip()
+        if 'Solved' in label_text:
+            problems_solved = value.text.strip()
             break
+
+    print(f"Debug: coding_score={coding_score}, problems_solved={problems_solved}")
 
     return {
         'username': username,
