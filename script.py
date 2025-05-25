@@ -4,22 +4,20 @@ from datetime import datetime
 import re
 
 def get_gfg_stats(username):
-    url = f"https://auth.geeksforgeeks.org/user/{username}/"
+    url = f"https://www.geeksforgeeks.org/user/{username}/"
     response = requests.get(url)
-    soup = BeautifulSoup(response.content, 'html.parser')
+    soup = BeautifulSoup(response.text, 'html.parser')
 
-    labels = soup.find_all('div', class_='scoreCard_head_left--text__KZ2S1')
-    stats = {}
+    coding_score_div = soup.find('div', class_='rating-number')
+    coding_score = coding_score_div.text.strip() if coding_score_div else 'N/A'
 
-    for label_div in labels:
-        label = label_div.text.strip()
-        value_div = label_div.find_next_sibling('div', class_='scoreCard_head_left--score__oSi_x')
-        if value_div:
-            value = value_div.text.strip()
-            stats[label] = value
-
-    coding_score = stats.get('Coding Score', 'N/A')
-    problems_solved = stats.get('Problem Solved', 'N/A')
+    problems_solved = 'N/A'
+    stats_sections = soup.find_all('div', class_='stat-number')
+    for stat in stats_sections:
+        label = stat.find_previous_sibling('div')
+        if label and 'Solved' in label.text:
+            problems_solved = stat.text.strip()
+            break
 
     return {
         'username': username,
@@ -32,7 +30,7 @@ def update_readme(stats):
   
 ## GeeksforGeeks Stats
 
-**Username:** [{stats['username']}](https://auth.geeksforgeeks.org/user/{stats['username']}/)  
+**Username:** [{stats['username']}](https://www.geeksforgeeks.org/user/{stats['username']}/)  
 **Coding Score:** {stats['coding_score']}  
 **Problems Solved:** {stats['problems_solved']}  
   
@@ -60,6 +58,6 @@ _Last updated on {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}_
         f.write(content)
 
 if __name__ == "__main__":
-    username = "itsmanhy69"  # Replace with your GfG username if needed
+    username = "itsmanhy69"
     stats = get_gfg_stats(username)
     update_readme(stats)
