@@ -1,5 +1,33 @@
+import requests
+from bs4 import BeautifulSoup
 import re
 from datetime import datetime
+
+def get_gfg_stats(username):
+    url = f"https://auth.geeksforgeeks.org/user/{username}/"
+    response = requests.get(url)
+    if response.status_code != 200:
+        raise Exception(f"Failed to fetch profile: {response.status_code}")
+    
+    soup = BeautifulSoup(response.text, "html.parser")
+    
+    # Extract coding score
+    coding_score_div = soup.find("div", class_="score_card_value")
+    coding_score = coding_score_div.text.strip() if coding_score_div else "N/A"
+
+    # Extract number of problems solved
+    problems_solved = "N/A"
+    stats_divs = soup.find_all("div", class_="score_cards_item_content")
+    for div in stats_divs:
+        if "Problems Solved" in div.text:
+            problems_solved = div.find("span").text.strip()
+            break
+
+    return {
+        "username": username,
+        "coding_score": coding_score,
+        "problems_solved": problems_solved
+    }
 
 def generate_readme(stats):
     stats_block = f"""<!-- GFG_STATS_START -->
@@ -20,7 +48,6 @@ _Last updated on {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}_
     except FileNotFoundError:
         content = ""
 
-    # Replace content between markers
     if "<!-- GFG_STATS_START -->" in content and "<!-- GFG_STATS_END -->" in content:
         content = re.sub(
             r"<!-- GFG_STATS_START -->.*<!-- GFG_STATS_END -->",
@@ -29,13 +56,13 @@ _Last updated on {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}_
             flags=re.DOTALL
         )
     else:
-        # If markers not found, append block at the end
         content += f"\n{stats_block}"
 
     with open("README.md", "w") as f:
         f.write(content)
 
 if __name__ == "__main__":
-    stats = get_gfg_stats("itsmanhy69")  # or your GfG username
+    stats = get_gfg_stats("itsmanhy69")  # your GfG username here
+    print("✅ Successfully fetched GfG stats.")
     generate_readme(stats)
-print("Generating README with latest stats...")
+    print("✅ README.md updated with GfG stats.")
