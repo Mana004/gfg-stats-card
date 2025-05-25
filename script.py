@@ -34,3 +34,8 @@ _Last updated on {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}_
 
     with open("README.md", "w") as f:
         f.write(content)
+
+if __name__ == "__main__":
+    stats = get_gfg_stats("itsmanhy69")  # or your GfG username
+    generate_readme(stats)
+print("Generating README with latest stats...")
