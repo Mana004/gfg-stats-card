@@ -4,38 +4,38 @@ from datetime import datetime
 import re
 
 def get_gfg_stats(username):
-    url = f"https://www.geeksforgeeks.org/user/{username}/"
-    response = requests.get(url)
+    url = f"https://auth.geeksforgeeks.org/user/{username}/"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)"
+                      " Chrome/114.0.0.0 Safari/537.36"
+    }
+    response = requests.get(url, headers=headers)
+
+    # Save raw HTML to inspect
+    with open("gfg_profile.html", "w", encoding="utf-8") as f:
+        f.write(response.text)
+
     soup = BeautifulSoup(response.text, 'html.parser')
 
-    with open("gfg_profile.html", "w", encoding="utf-8") as f:
-    f.write(response.text)
+    labels = soup.find_all('div', class_='scoreCard_head_left--text__KZ2S1')
+    stats = {}
 
-    coding_score = 'N/A'
-    problems_solved = 'N/A'
+    for label_div in labels:
+        label = label_div.text.strip()
+        value_div = label_div.find_next_sibling('div', class_='scoreCard_head_left--score__oSi_x')
+        if value_div:
+            value = value_div.text.strip()
+            stats[label] = value
 
-    # Find Coding Score
-    coding_div = soup.find('div', class_='rating-number')
-    if coding_div:
-        coding_score = coding_div.text.strip()
-
-    # Find Problems Solved by matching label and its value
-    stats_labels = soup.find_all('div', class_='stat-text')
-    stats_values = soup.find_all('div', class_='stat-number')
-
-    for label, value in zip(stats_labels, stats_values):
-        label_text = label.text.strip()
-        if 'Solved' in label_text:
-            problems_solved = value.text.strip()
-            break
-
-    print(f"Debug: coding_score={coding_score}, problems_solved={problems_solved}")
+    coding_score = stats.get('Coding Score', 'N/A')
+    problems_solved = stats.get('Problem Solved', 'N/A')
 
     return {
         'username': username,
         'coding_score': coding_score,
         'problems_solved': problems_solved
     }
+
 
 def update_readme(stats):
     stats_block = f"""<!-- GFG_STATS_START -->
