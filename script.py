@@ -8,6 +8,9 @@ def get_gfg_stats(username):
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
 
+    with open("gfg_profile.html", "w", encoding="utf-8") as f:
+    f.write(response.text)
+
     coding_score = 'N/A'
     problems_solved = 'N/A'
 
