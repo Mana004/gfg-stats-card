@@ -1,51 +1,47 @@
 import requests
 from bs4 import BeautifulSoup
-import re
 from datetime import datetime
+import re
 
-# Function to scrape data
 def get_gfg_stats(username):
     url = f"https://auth.geeksforgeeks.org/user/{username}/"
     response = requests.get(url)
-    if response.status_code != 200:
-        raise Exception(f"Failed to fetch profile: {response.status_code}")
-    
-    soup = BeautifulSoup(response.text, "html.parser")
-    
-    # Extract coding score
-    coding_score_div = soup.find("div", class_="score_card_value")
-    coding_score = coding_score_div.text.strip() if coding_score_div else "N/A"
+    soup = BeautifulSoup(response.content, 'html.parser')
 
-    # Extract number of problems solved
-    problems_solved = "N/A"
-    stats_divs = soup.find_all("div", class_="score_cards_item_content")
-    for div in stats_divs:
-        if "Problems Solved" in div.text:
-            problems_solved = div.find("span").text.strip()
-            break
+    labels = soup.find_all('div', class_='scoreCard_head_left--text__KZ2S1')
+    stats = {}
+
+    for label_div in labels:
+        label = label_div.text.strip()
+        value_div = label_div.find_next_sibling('div', class_='scoreCard_head_left--score__oSi_x')
+        if value_div:
+            value = value_div.text.strip()
+            stats[label] = value
+
+    coding_score = stats.get('Coding Score', 'N/A')
+    problems_solved = stats.get('Problem Solved', 'N/A')
 
     return {
-        "username": username,
-        "coding_score": coding_score,
-        "problems_solved": problems_solved
+        'username': username,
+        'coding_score': coding_score,
+        'problems_solved': problems_solved
     }
 
-# Function to update README
-def generate_readme(stats):
+def update_readme(stats):
     stats_block = f"""<!-- GFG_STATS_START -->
-
-# GeeksforGeeks Stats Card
+  
+## GeeksforGeeks Stats
 
 **Username:** [{stats['username']}](https://auth.geeksforgeeks.org/user/{stats['username']}/)  
 **Coding Score:** {stats['coding_score']}  
 **Problems Solved:** {stats['problems_solved']}  
-
+  
 _Last updated on {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}_
 
 <!-- GFG_STATS_END -->"""
 
     try:
-        with open("README.md", "r") as f:
+        with open("README.md", "r", encoding="utf-8") as f:
             content = f.read()
     except FileNotFoundError:
         content = ""
@@ -58,16 +54,12 @@ _Last updated on {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}_
             flags=re.DOTALL
         )
     else:
-        content += f"\n{stats_block}"
+        content += "\n\n" + stats_block
 
-    with open("README.md", "w") as f:
+    with open("README.md", "w", encoding="utf-8") as f:
         f.write(content)
 
-# Run scraper and update readme
 if __name__ == "__main__":
-    stats = get_gfg_stats("itsmanhy69")
-    print("✅ Stats fetched successfully.")
-    generate_readme(stats)
-    print("✅ README updated successfully.")
-    print("DEBUG: Fetched stats:", stats)  # Add this line
-
+    username = "itsmanhy69"  # Replace with your GfG username if needed
+    stats = get_gfg_stats(username)
+    update_readme(stats)
