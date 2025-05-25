@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import re
 from datetime import datetime
 
+# Function to scrape data
 def get_gfg_stats(username):
     url = f"https://auth.geeksforgeeks.org/user/{username}/"
     response = requests.get(url)
@@ -29,6 +30,7 @@ def get_gfg_stats(username):
         "problems_solved": problems_solved
     }
 
+# Function to update README
 def generate_readme(stats):
     stats_block = f"""<!-- GFG_STATS_START -->
 
@@ -61,8 +63,9 @@ _Last updated on {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}_
     with open("README.md", "w") as f:
         f.write(content)
 
+# Run scraper and update readme
 if __name__ == "__main__":
-    stats = get_gfg_stats("itsmanhy69")  # your GfG username here
-    print("✅ Successfully fetched GfG stats.")
+    stats = get_gfg_stats("itsmanhy69")
+    print("✅ Stats fetched successfully.")
     generate_readme(stats)
-    print("✅ README.md updated with GfG stats.")
+    print("✅ README updated successfully.")
