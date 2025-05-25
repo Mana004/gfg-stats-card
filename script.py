@@ -69,3 +69,5 @@ if __name__ == "__main__":
     print("✅ Stats fetched successfully.")
     generate_readme(stats)
     print("✅ README updated successfully.")
+    print("DEBUG: Fetched stats:", stats)  # Add this line
+
